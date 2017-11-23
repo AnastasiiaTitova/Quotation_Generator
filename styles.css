@@ -1,0 +1,42 @@
+body
+{
+	background: url(back.jpg) no-repeat;
+	background-size:cover;
+}
+
+.content
+{
+	margin: 0px auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+canvas
+{
+	border-color: #000;
+	border: 1px solid;
+	margin-top: 20px;
+	text-align: center;
+}
+
+input
+{
+	margin: 25px;
+	width: 200px;
+	height: 50px;
+	font-size: 20px;
+}
+
+textarea 
+{
+   resize: none;
+   text-align:center;
+   /*visibility: hidden;*/
+}
+
+.hide
+{
+    display:none;
+}
+

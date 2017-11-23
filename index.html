@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Quotations</title>
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	<script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+</head>
+
+<body>
+	<div class="content" align="center">
+	 	<canvas  id = "cnv" width="900" height="700"></canvas>
+	 	<div>
+	 	   <input id = "generate" type="button" value = "Generate" onclick="draw()"/>
+	 	   <input id = "save" type="button" value = "Save" onclick="save()"/>
+	 	</div>
+	 	<div class= "hide"></div>
+    	<p><textarea id = "link" class = "hide" rows="1" cols="60" maxlength = "60" readonly name="text"></textarea></p>
+	</div>
+	
+<script type="text/javascript">
+	
+		function draw()
+		{
+			document.getElementById("save").disabled = false;
+			var t = document.getElementById("link");
+			t.classList.add("hide");
+			var cnv = document.getElementById('cnv');
+			var context = cnv.getContext('2d');
+			context.clearRect(0, 0, 900, 700);
+			context.textAlign = "center";
+			var img = new Image();
+			img.crossOrigin = "Anonymous";
+			img.src = 'https://picsum.photos/900/700/?image=' + Math.floor(Math.random() * 1234);
+			img.onload = function()
+			{
+				context.drawImage(img, 0, 0);
+				var request = new XMLHttpRequest();
+				request.open("GET", "cors.php", true);
+				console.log(request.responseText)
+				request.onreadystatechange = function()
+				{
+
+				if (request.responseText)
+					{
+							var objJSON = JSON.parse(request.responseText);
+							var err = false;
+							 function wrapText(context, text, marginLeft, marginTop, maxWidth, lineHeight)
+                                {
+                                    var words = text.split(" ");
+                                    var countWords = words.length;
+                                    var line = "";
+                                    var kol = 0;
+                                    for (var n = 0; n < countWords; n++)
+                                    {
+                                        var testLine = line + words[n] + " ";
+                                        var testWidth = context.measureText(testLine).width;
+                                        if (testWidth > maxWidth) {
+                                            context.fillText(line, 450, marginTop);
+                                            context.strokeText(line, 450, marginTop);
+                                            line = words[n] + " ";
+                                            marginTop += lineHeight;
+                                            kol = kol + 1;
+                                        }
+                                        else
+                                        {
+                                        	line = testLine;
+                                        }
+                                   }
+                                	context.fillText(line, 450, marginTop);
+                                	context.strokeText(line, 450, marginTop);
+                                	if (kol>7)
+                                	{
+                                	    context.clearRect(0, 0, 900, 700);
+                                	    context.fillStyle = "#bbb";
+                                	    context.fillText("Try again", 450, 350);
+                                	    document.getElementById("save").disabled = true;
+                                	    err = true;
+                                	}
+                            	};
+
+							var maxWidth = 750; 
+                            var lineHeight = 50;
+                            var marginLeft = 20;
+                            var marginTop = 150;
+                            var text = objJSON.quoteText;
+                            context.font = "48pt Calibri";
+							context.fillStyle = "#FFFF00";
+
+						wrapText(context, text, marginLeft, marginTop, maxWidth, lineHeight);
+							
+							if (err!=true)
+							{
+							    var text = objJSON.quoteAuthor;
+							    context.font = "32pt Calibri";
+							    context.fillStyle = "#FFFF00";
+						        wrapText(context, text, marginLeft, 650, maxWidth, lineHeight)
+							}
+					}
+			}
+			request.send(null);
+		}
+		img.onerror = function()
+		{
+		    draw();
+		}
+		}
+		function save()
+		{
+		    document.getElementById("save").disabled = true;
+		    var t = document.getElementById("link");
+			t.classList.remove("hide");
+		    var cnv = document.getElementById('cnv');
+		    var imgdata = cnv.toDataURL('image/png');
+		    $.ajax({
+                  type: "POST",
+                  url: "saving.php",
+                  data: { 
+                         imgBase64: imgdata
+                        },
+                success: function(data)
+                    { 
+                        var obj = JSON.parse(data); 
+                        if(obj.success) 
+                        {
+                            document.getElementById("link").value = obj.link;
+                        } 
+                        else 
+                        {
+                            document.getElementById("link").value = obj.error;
+                        }
+                        
+                    }
+                });
+    	}
+		draw();
+	</script>
+</body>
+</html>
